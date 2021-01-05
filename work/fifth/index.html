@@ -85,20 +85,20 @@
     <script src="../../common/js/jquery.js"></script>
     <script>
       $(function() {
-        var kye = $('.select').val();
-        var data = $('.list').find('li');
         $('.select').change(function() {
-          if (kye === 'all') {
-            $(data).each(function(){ $(this).show() });
+          var kye = $('.select').val();
+          var list = $('.list').find('li');
+          if (kye == 'all') {
+            $(list).show();
           } else {
-              $(data).each(function(){
-                if (kye === $(data).data('category-type')) {
-                  $(data).show();
+              $(list).each(function() {
+                if (kye == $(this).data('category-type')) {
+                  $(this).show();
                 } else {
-                  $(data).hide();
+                  $(this).hide();
                 }
               });
-           }
+            }
          });
       });
       // 今回やるのはソート機能です。
