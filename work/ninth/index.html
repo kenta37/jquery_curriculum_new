@@ -16,16 +16,19 @@
     <script src="../../common/js/jquery.js"></script>
     <script>
       $(function() {
+        function createTemplate(hex, color) {
+          var template = '<li class="colorList__item">' +
+                          '<p class="colorList__title" style="background-color:' + hex + ';">' +
+                          color + '</p>' +'</li>';
+          return template;
+        }
         $.ajax({
           url: './data.json'
         })
         .done(function(data) {
           $.each(data.colorsArray,function() {
-            $('.colorList').append(
-              $('<li>').addClass('colorList__item').append(
-                $('<p>').addClass('colorList__title').css('background-color',$(this).hexValue).html($(this).colorName)
-              )
-            )
+            var result = createTemplate($(this).hexValue,$(this).colorName);
+            $('.colorList').html(result)
           });
         });
       });
