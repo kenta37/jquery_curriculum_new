@@ -27,11 +27,7 @@
       $(function() {
         $('.nav').find('li').click(function() {
           var Number = $(this).index();
-          $('.contents').find('li').addClass('is-hidden')
-        });
-        $('.nav').find('li').click(function() {
-          var Number = $(this).index();
-          $('.contents').find('li').eq(Number).removeClass('is-hidden')
+          $('.contents').find('li').addClass('is-hidden').eq(Number).removeClass('is-hidden')
         });
       });
       // 今回やるのはタブメニューです。
