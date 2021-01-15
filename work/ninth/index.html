@@ -26,9 +26,10 @@
           url: './data.json'
         })
         .done(function(data) {
-          $.each(data.colorsArray,function() {
-            var result = createTemplate($(this).hexValue,$(this).colorName);
-            $('.colorList').html(result)
+          $.each(data.colorsArray,function(index,value) {
+            console.log($(this)[0].hexValue);
+            var result = createTemplate($(this)[0].hexValue,$(this)[0].colorName);
+            $('.colorList').html(result);
           });
         });
       });
