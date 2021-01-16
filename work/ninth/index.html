@@ -16,11 +16,11 @@
     <script src="../../common/js/jquery.js"></script>
     <script>
       $(function() {
+        var template = '';
         function createTemplate(hex, color) {
-          var template = '<li class="colorList__item">' +
+          template += '<li class="colorList__item">' +
                           '<p class="colorList__title" style="background-color:' + hex + ';">' +
                           color + '</p>' +'</li>';
-          return template;
         }
         $.ajax({
           url: './data.json'
@@ -28,9 +28,10 @@
         .done(function(data) {
           $.each(data.colorsArray,function(index,value) {
             console.log($(this)[0].hexValue);
-            var result = createTemplate($(this)[0].hexValue,$(this)[0].colorName);
-            $('.colorList').html(result);
+            createTemplate($(this)[0].hexValue,$(this)[0].colorName);
           });
+        console.log(template);
+        $('.colorList').append(template);
         });
       });
       // [使うメソッド]
