@@ -29,19 +29,70 @@
     <script src="./js/appid.js"></script>
     <script>
       $(function() {
+        var list = '';
+        function cleatelist(index, value) {
+          list += '<li class="lists__item">' + 
+                    '<div class="lists__item__inner">' + 
+                      '<a href="' +value.Item.itemUrl+ '" class="lists__item__link" target="_blank">' + 
+                        '<img src="' +value.Item.mediumImageUrl+ '" class="lists__item__img" alt="">' + 
+                        ' <p class="lists__item__detail">作品名：' +value.Item.title+ '</p>' + 
+                        '<p class="lists__item__detail">作者　：' +value.Item.author+ '</p>' + 
+                        '<p class="lists__item__detail">出版社：' +value.Item.publisherName+ '</p>' + 
+                      '</a>' + 
+                    '</div>' + 
+                  '</li>';
+        }
+        var pager = '';
+        function cleatpager(value) {
+          pager += '<div class="pager" data-js="pager">' + 
+                      '<div class="counter">' + 
+                        '<span class="counter-current">' +value.page+ '</span>/<span class="counter-all">' +value.pageCount+'</span>' + 
+                      '</div>' + 
+                      '<div class="btn-wrapper">' + 
+                        '<a class="btn-item" data-js="page-prev" href="">前へ</a>' + 
+                        '<a class="btn-item" data-js="page-next" href="">次へ</a>' +
+                      '</div>' + 
+                    '</div>';
+        }
+        var counter = 1;
         $.ajax({
          url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
          type: 'GET',
          datatype: 'json',
          data: {
-            //「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
-           applicationId: appId, (今回はこの変数をIDとして使用します) ※メンターから別途渡されるファイルを読み込んでください。
-           booksGenreId: '001'
+           applicationId: appId,
+           booksGenreId: '001',
+           hits: 20,
+           page: counter,
+           pageCount: 100,
          },
-        }).done(function(data) {
-          //この中にデータ取得後の動きを記述していきます。
-         console.log(data);
-       });
+        })
+        .done(function(data) {
+          $('.search__btn').on('click', function() {
+            $('.lists').empty();
+            $.each(data.Items,function(index, value) {
+              cleatelist(index, value);
+            });
+            cleatpager(data);
+            $('.lists').append(list);
+            $('.lists').append(pager);
+            if (data.page == 1) {
+              $('[data-js="page-prev"]').addClass('disabled');
+            }
+            if (data.page == data.pageCount) {
+              $('[data-js="page-next"]').addClass('disabled');
+            }
+          });
+          $('body').on('click','[data-js="page-prev"]', function(e) {
+            e.preventDefault();
+            counter--;
+          });
+          $('body').on('click','[data-js="page-next"]', function(e) {
+            e.preventDefault();
+            counter++;
+            console.log(counter);
+          });
+        });
       });
       // 楽天ブックスの総合検索APIを使って製作してください。
       // answerの挙動を良く見てね！
