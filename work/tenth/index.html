@@ -44,6 +44,7 @@
         }
         var pager = '';
         function cleatpager(value) {
+          console.log(value);
           pager += '<div class="pager" data-js="pager">' + 
                       '<div class="counter">' + 
                         '<span class="counter-current">' +value.page+ '</span>/<span class="counter-all">' +value.pageCount+'</span>' + 
@@ -56,14 +57,22 @@
         }
         function search(data) {
           $('.lists').empty();
-          $('.lists').append(list);
-          $('.lists').append(pager);
+          $('.pager').remove();
+          console.log(list);
           $.each(data.Items,function(index, value) {
             cleatelist(index, value);
           });
+          $('.lists').append(list);
+          list = ''
           cleatpager(data);
+          $('.lists').after(pager);
+          pager = ''
         };
-        var counter = 1;
+        var keyword = '';
+        function cleatekeyword(value) {
+          keyword = $('.search__text__input').val();
+        }
+        var counter = null;
         $.ajax({
          url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
          type: 'GET',
@@ -71,6 +80,7 @@
          data: {
            applicationId: appId,
            booksGenreId: '001',
+           keyword: keyword,
            hits: 20,
            page: counter,
            pageCount: 100,
@@ -78,6 +88,7 @@
         })
         .done(function(data) {
           $('.search__btn').on('click', function() {
+            cleatekeyword(data);
             search(data);
             if (data.page == 1) {
               $('[data-js="page-prev"]').addClass('disabled');
