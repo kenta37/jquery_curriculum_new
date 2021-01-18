@@ -72,6 +72,9 @@
         function cleatekeyword(date) {
           keyword = $('.search__text__input').val();
         }
+        $('.search__btn').on('click', function() {
+            console.log('クリック');
+        });
         var counter = null;
         $.ajax({
          url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
@@ -88,7 +91,6 @@
         })
         .done(function(data) {
           $('.search__btn').on('click', function() {
-            cleatekeyword(data);
             search(data);
             if (data.page == 1) {
               $('[data-js="page-prev"]').addClass('disabled');
