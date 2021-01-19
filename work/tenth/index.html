@@ -86,20 +86,24 @@
           createkeyword();
           counter = 1;
           getBookData();
+          var a =$('.btn-item').hasClass('disabled');
+          console.log(a);
         });
-        if (counter > 1) {
-          $('body').on('click','[data-js="page-prev"]', function(e) {
+        $('body').on('click','[data-js="page-prev"]', function(e) {
+          if ($('[data-js="page-prev]').css('backgroundColor') == 'rgb(67,206,224)') {
             e.preventDefault();
             counter--;
             getBookData();
             $('html,body').scrollTop(0);
-          });
-        }
+          }
+        });
         $('body').on('click','[data-js="page-next"]', function(e) {
-          e.preventDefault();
-          counter++;
-          getBookData();
-          $('html,body').scrollTop(0);
+          if ($('[data-js="page-next]').css('backgroundColor') == 'rgb(67,206,224)') {
+            e.preventDefault();
+            counter++;
+            getBookData();
+            $('html,body').scrollTop(0);
+          }
         });
         function getBookData() {
           $.ajax({
