@@ -30,7 +30,7 @@
     <script>
       $(function() {
         var list = '';
-        function cleatelist(index, value) {
+        function createlist(index, value) {
           list += '<li class="lists__item">' + 
                     '<div class="lists__item__inner">' + 
                       '<a href="' +value.Item.itemUrl+ '" class="lists__item__link" target="_blank">' + 
@@ -43,8 +43,7 @@
                   '</li>';
         }
         var pager = '';
-        function cleatpager(value) {
-          console.log(value);
+        function createpager(value) {
           pager += '<div class="pager" data-js="pager">' + 
                       '<div class="counter">' + 
                         '<span class="counter-current">' +value.page+ '</span>/<span class="counter-all">' +value.pageCount+'</span>' + 
@@ -56,61 +55,77 @@
                     '</div>';
         }
         function search(data) {
+          $('.message').empty();
           $('.lists').empty();
           $('.pager').remove();
-          console.log(list);
           $.each(data.Items,function(index, value) {
-            cleatelist(index, value);
+            createlist(index, value);
           });
           $('.lists').append(list);
           list = ''
-          cleatpager(data);
+          createpager(data);
           $('.lists').after(pager);
           pager = ''
+          if (counter == 1) {
+            $('[data-js="page-prev"]').addClass('disabled');
+          };
+          if (counter == data.pageCount) {
+            $('[data-js="page-next"]').addClass('disabled');
+          };
+          if (data.hits == 0) {
+            $('.message').html('<p class="error-message">検索結果が見つかりませんでした.<br>別のキーワードで検索して下さい。</p>')
+            $('.pager').remove();
+          }
         };
-        var keyword = '';
-        function cleatekeyword(date) {
+        var keyword = null;
+        var counter = null;
+        function createkeyword() {
           keyword = $('.search__text__input').val();
         }
         $('.search__btn').on('click', function() {
-            console.log('クリック');
+          createkeyword();
+          counter = 1;
+          getBookData();
         });
-        var counter = null;
-        $.ajax({
-         url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-         type: 'GET',
-         datatype: 'json',
-         data: {
-           applicationId: appId,
-           booksGenreId: '001',
-           keyword: keyword,
-           hits: 20,
-           page: counter,
-           pageCount: 100,
-         },
-        })
-        .done(function(data) {
-          $('.search__btn').on('click', function() {
-            search(data);
-            if (data.page == 1) {
-              $('[data-js="page-prev"]').addClass('disabled');
-            }
-            if (data.page == data.pageCount) {
-              $('[data-js="page-next"]').addClass('disabled');
-            }
-          });
+        if (counter > 1) {
           $('body').on('click','[data-js="page-prev"]', function(e) {
             e.preventDefault();
-            search(data);
             counter--;
+            getBookData();
+            $('html,body').scrollTop(0);
           });
-          $('body').on('click','[data-js="page-next"]', function(e) {
-            e.preventDefault();
-            search(data);
-            counter++;
-            console.log(counter);
-          });
+        }
+        $('body').on('click','[data-js="page-next"]', function(e) {
+          e.preventDefault();
+          counter++;
+          getBookData();
+          $('html,body').scrollTop(0);
         });
+        function getBookData() {
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',
+            data: {
+              applicationId: appId,
+              booksGenreId: '001',
+              keyword: keyword,
+              hits: 20,
+              page: counter,
+              pageCount: 100,
+            },
+          })
+          .done(function(data) {
+            search(data);
+          })
+          .fail(function() {
+            if (keyword == '') {
+              $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
+            } else {
+              $('.message').html('<p class="error-message">正常に通信が行われませんでした。<br>通信環境をお確かめのうえもう一度お試しください。</p>')
+            }
+          });
+        }
       });
       // 楽天ブックスの総合検索APIを使って製作してください。
       // answerの挙動を良く見てね！
