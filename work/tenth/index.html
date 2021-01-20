@@ -36,7 +36,7 @@
         }
         function creatList(value) {
           var list = '';
-          if (value.hits == 0) {
+          if (value.hits === 0) {
             $('.message').html('<p class="error-message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>')
           } else {
           $.each(value.Items,function(index, value) {
@@ -66,20 +66,28 @@
                       '</div>' + 
                     '</div>';
           $('.lists').after(pager);
-          if (counter == 1) {
+          if (counter === 1) {
             $('[data-js="page-prev"]').addClass('disabled');
           };
-          if (counter == value.pageCount) {
+          if (counter === value.pageCount) {
             $('[data-js="page-next"]').addClass('disabled');
           };
         }
+        function errorMessage(value) {
+          switch (value.status) {
+              case 0:
+                $('.message').html('<p class="error-message">通信に失敗しました。インターネットの接続をご確認ください。</p>')
+              break;
+              case 400:
+                $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
+              break;
+              case 429:
+                $('.message').html('<p class="error-message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>')
+              break;
+            }
+        }
         var keyword = '';
         var counter = 1;
-        function search(data) {
-          empty();
-          creatList(data);
-          createpager(data);
-        };
         $('.search__btn').on('click', function() {
           keyword = $('.search__text__input').val();
           counter = 1;
@@ -116,21 +124,13 @@
             }
           })
           .done(function(data) {
-            search(data);
+            empty();
+            creatList(data);
+            createpager(data);
           })
           .fail(function(error) {
             empty();
-            switch (error.status) {
-              case 0:
-                $('.message').html('<p class="error-message">通信に失敗しました。インターネットの接続をご確認ください。</p>')
-              break;
-              case 400:
-                $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
-              break;
-              case 429:
-                $('.message').html('<p class="error-message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>')
-              break;
-            }
+            errorMessage(error);
           })
         }
       });
