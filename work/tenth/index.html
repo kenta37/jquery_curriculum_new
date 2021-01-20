@@ -29,21 +29,33 @@
     <script src="./js/appid.js"></script>
     <script>
       $(function() {
-        var list = '';
-        function createlist(index, value) {
-          list += '<li class="lists__item">' + 
-                    '<div class="lists__item__inner">' + 
-                      '<a href="' +value.Item.itemUrl+ '" class="lists__item__link" target="_blank">' + 
-                        '<img src="' +value.Item.mediumImageUrl+ '" class="lists__item__img" alt="">' + 
-                        ' <p class="lists__item__detail">作品名：' +value.Item.title+ '</p>' + 
-                        '<p class="lists__item__detail">作者　：' +value.Item.author+ '</p>' + 
-                        '<p class="lists__item__detail">出版社：' +value.Item.publisherName+ '</p>' + 
-                      '</a>' + 
-                    '</div>' + 
-                  '</li>';
+        function empty() {
+          $('.message').empty();
+          $('.lists').empty();
+          $('.pager').remove();
         }
-        var pager = '';
+        function creatList(value) {
+          var list = '';
+          if (value.hits == 0) {
+            $('.message').html('<p class="error-message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>')
+          } else {
+          $.each(value.Items,function(index, value) {
+            list += '<li class="lists__item">' + 
+                      '<div class="lists__item__inner">' + 
+                        '<a href="' +value.Item.itemUrl+ '" class="lists__item__link" target="_blank">' + 
+                          '<img src="' +value.Item.mediumImageUrl+ '" class="lists__item__img" alt="">' + 
+                          ' <p class="lists__item__detail">作品名：' +value.Item.title+ '</p>' + 
+                          '<p class="lists__item__detail">作者　：' +value.Item.author+ '</p>' + 
+                          '<p class="lists__item__detail">出版社：' +value.Item.publisherName+ '</p>' + 
+                        '</a>' + 
+                      '</div>' + 
+                    '</li>';
+          });
+          $('.lists').append(list);
+          }
+        }
         function createpager(value) {
+          var pager = '';
           pager = '<div class="pager" data-js="pager">' + 
                       '<div class="counter">' + 
                         '<span class="counter-current">' +value.page+ '</span>/<span class="counter-all">' +value.pageCount+'</span>' + 
@@ -53,31 +65,20 @@
                         '<a class="btn-item" data-js="page-next" href="">次へ</a>' +
                       '</div>' + 
                     '</div>';
-        }
-        var keyword = null;
-        var counter = null;
-        function search(data) {
-          $('.message').empty();
-          $('.lists').empty();
-          $('.pager').remove();
-          $.each(data.Items,function(index, value) {
-            createlist(index, value);
-          });
-          $('.lists').append(list);
-          list = ''
-          createpager(data);
           $('.lists').after(pager);
           if (counter == 1) {
             $('[data-js="page-prev"]').addClass('disabled');
           };
-          if (counter == data.pageCount) {
+          if (counter == value.pageCount) {
             $('[data-js="page-next"]').addClass('disabled');
           };
-          if (data.hits == 0) {
-            $('.message').html('<p class="error-message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>')
-            $('.lists').empty();
-            $('.pager').remove();
-          }
+        }
+        var keyword = '';
+        var counter = 1;
+        function search(data) {
+          empty();
+          creatList(data);
+          createpager(data);
         };
         $('.search__btn').on('click', function() {
           keyword = $('.search__text__input').val();
@@ -86,8 +87,7 @@
         });
         $('body').on('click','[data-js="page-prev"]', function(e) {
           e.preventDefault();
-          var isPrev = !($('[data-js="page-prev"]').hasClass('disabled'));
-          if (isPrev) {
+          if (!($('[data-js="page-prev"]').hasClass('disabled'))) {
             counter--;
             getBookData();
             $('html,body').scrollTop(0);
@@ -95,8 +95,7 @@
         });
         $('body').on('click','[data-js="page-next"]', function(e) {
           e.preventDefault();
-          var isNext = !($('[data-js="page-next"]').hasClass('disabled'));
-          if (isNext) {
+          if (!($('[data-js="page-next"]').hasClass('disabled'))) {
             counter++;
             getBookData();
             $('html,body').scrollTop(0);
@@ -120,15 +119,17 @@
             search(data);
           })
           .fail(function(error) {
-            console.log(error);
-            $('.lists').empty();
-            $('.pager').remove();
-            $('.message').html('<p class="error-message">通信に失敗しました。インターネットの接続をご確認ください。</p>')
-            if (error.status == 400) {
-              $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
-            }
-            if (error.status == 429) {
-              $('.message').html('<p class="error-message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>')
+            empty();
+            switch (error.status) {
+              case 0:
+                $('.message').html('<p class="error-message">通信に失敗しました。インターネットの接続をご確認ください。</p>')
+              break;
+              case 400:
+                $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
+              break;
+              case 429:
+                $('.message').html('<p class="error-message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>')
+              break;
             }
           })
         }
