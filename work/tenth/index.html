@@ -29,6 +29,65 @@
     <script src="./js/appid.js"></script>
     <script>
       $(function() {
+        var keyword = '';
+        var counter = 1;
+        $('.search__btn').on('click', function() {
+          keyword = $('.search__text__input').val();
+          counter = 1;
+          getBookData();
+        });
+        $(document).on('click','[data-js="page-prev"]', function(e) {
+          e.preventDefault();
+          if (!($('[data-js="page-prev"]').hasClass('disabled'))) {
+            counter--;
+            getBookData();
+            $('html,body').scrollTop(0);
+          }
+        });
+        $(document).on('click','[data-js="page-next"]', function(e) {
+          e.preventDefault();
+          if (!($('[data-js="page-next"]').hasClass('disabled'))) {
+            counter++;
+            getBookData();
+            $('html,body').scrollTop(0);
+          }
+        });
+        function getBookData() {
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',
+            data: {
+              applicationId: appId,
+              booksGenreId: '001',
+              keyword: keyword,
+              hits: 20,
+              page: counter,
+              pageCount: 100,
+            }
+          })
+          //getとpost リクエストの違い　メリットデメリット 
+          //GET
+          //GETメソッドを使ってデータを送信する場合は、URLの後ろに送りたいデータを付与して送る。データベースの書き換えが必要ない場合。
+          //データが少ないとき通信が軽くなる、使いまわしがきく
+          //urlをいじれば違うデータが取れる。
+          //POST
+          //HTTPリクエスト内のメッセージボディにデータを含めて送りる。データを変更したい時に使用
+          // データのソート、更新、削除、新規登録などで使用する場合。
+          // パスワードのような秘匿情報をURLに表示したくない場合。
+          // データ量が多い場合。
+          // バイナリデータを送信したい場合。
+          // POST送信の場合は、URLなどの見た目では送信データはわかりません。データが残らない
+          .done(function(data) {
+            empty();
+            creatList(data);
+            createpager(data);
+          })
+          .fail(function(error) {
+            empty();
+            errorMessage(error);
+          })
+        }
         function empty() {
           $('.message').empty();
           $('.lists').empty();
@@ -75,63 +134,16 @@
         }
         function errorMessage(value) {
           switch (value.status) {
-              case 0:
-                $('.message').html('<p class="error-message">通信に失敗しました。インターネットの接続をご確認ください。</p>')
-              break;
-              case 400:
-                $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
-              break;
-              case 429:
-                $('.message').html('<p class="error-message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>')
-              break;
-            }
-        }
-        var keyword = '';
-        var counter = 1;
-        $('.search__btn').on('click', function() {
-          keyword = $('.search__text__input').val();
-          counter = 1;
-          getBookData();
-        });
-        $('body').on('click','[data-js="page-prev"]', function(e) {
-          e.preventDefault();
-          if (!($('[data-js="page-prev"]').hasClass('disabled'))) {
-            counter--;
-            getBookData();
-            $('html,body').scrollTop(0);
+            case 0:
+              $('.message').html('<p class="error-message">通信に失敗しました。インターネットの接続をご確認ください。</p>')
+            break;
+            case 400:
+              $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
+            break;
+            case 429:
+              $('.message').html('<p class="error-message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>')
+            break;
           }
-        });
-        $('body').on('click','[data-js="page-next"]', function(e) {
-          e.preventDefault();
-          if (!($('[data-js="page-next"]').hasClass('disabled'))) {
-            counter++;
-            getBookData();
-            $('html,body').scrollTop(0);
-          }
-        });
-        function getBookData() {
-          $.ajax({
-            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-            type: 'GET',
-            datatype: 'json',
-            data: {
-              applicationId: appId,
-              booksGenreId: '001',
-              keyword: keyword,
-              hits: 20,
-              page: counter,
-              pageCount: 100,
-            }
-          })
-          .done(function(data) {
-            empty();
-            creatList(data);
-            createpager(data);
-          })
-          .fail(function(error) {
-            empty();
-            errorMessage(error);
-          })
         }
       });
       // 楽天ブックスの総合検索APIを使って製作してください。
