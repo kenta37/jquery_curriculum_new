@@ -44,7 +44,7 @@
         }
         var pager = '';
         function createpager(value) {
-          pager += '<div class="pager" data-js="pager">' + 
+          pager = '<div class="pager" data-js="pager">' + 
                       '<div class="counter">' + 
                         '<span class="counter-current">' +value.page+ '</span>/<span class="counter-all">' +value.pageCount+'</span>' + 
                       '</div>' + 
@@ -54,6 +54,8 @@
                       '</div>' + 
                     '</div>';
         }
+        var keyword = null;
+        var counter = null;
         function search(data) {
           $('.message').empty();
           $('.lists').empty();
@@ -65,7 +67,6 @@
           list = ''
           createpager(data);
           $('.lists').after(pager);
-          pager = ''
           if (counter == 1) {
             $('[data-js="page-prev"]').addClass('disabled');
           };
@@ -73,33 +74,29 @@
             $('[data-js="page-next"]').addClass('disabled');
           };
           if (data.hits == 0) {
-            $('.message').html('<p class="error-message">検索結果が見つかりませんでした.<br>別のキーワードで検索して下さい。</p>')
+            $('.message').html('<p class="error-message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>')
+            $('.lists').empty();
             $('.pager').remove();
           }
         };
-        var keyword = null;
-        var counter = null;
-        function createkeyword() {
-          keyword = $('.search__text__input').val();
-        }
         $('.search__btn').on('click', function() {
-          createkeyword();
+          keyword = $('.search__text__input').val();
           counter = 1;
           getBookData();
-          var a =$('.btn-item').hasClass('disabled');
-          console.log(a);
         });
         $('body').on('click','[data-js="page-prev"]', function(e) {
-          if ($('[data-js="page-prev]').css('backgroundColor') == 'rgb(67,206,224)') {
-            e.preventDefault();
+          e.preventDefault();
+          var isPrev = !($('[data-js="page-prev"]').hasClass('disabled'));
+          if (isPrev) {
             counter--;
             getBookData();
             $('html,body').scrollTop(0);
           }
         });
         $('body').on('click','[data-js="page-next"]', function(e) {
-          if ($('[data-js="page-next]').css('backgroundColor') == 'rgb(67,206,224)') {
-            e.preventDefault();
+          e.preventDefault();
+          var isNext = !($('[data-js="page-next"]').hasClass('disabled'));
+          if (isNext) {
             counter++;
             getBookData();
             $('html,body').scrollTop(0);
@@ -117,18 +114,23 @@
               hits: 20,
               page: counter,
               pageCount: 100,
-            },
+            }
           })
           .done(function(data) {
             search(data);
           })
-          .fail(function() {
-            if (keyword == '') {
+          .fail(function(error) {
+            console.log(error);
+            $('.lists').empty();
+            $('.pager').remove();
+            $('.message').html('<p class="error-message">通信に失敗しました。インターネットの接続をご確認ください。</p>')
+            if (error.status == 400) {
               $('.message').html('<p class="error-message">検索文字が入力されていません。</p>')
-            } else {
-              $('.message').html('<p class="error-message">正常に通信が行われませんでした。<br>通信環境をお確かめのうえもう一度お試しください。</p>')
             }
-          });
+            if (error.status == 429) {
+              $('.message').html('<p class="error-message">リクエスト過多です。しばらく時間を置いてからお試しください。</p>')
+            }
+          })
         }
       });
       // 楽天ブックスの総合検索APIを使って製作してください。
